@@ -25,14 +25,13 @@ class Propfind extends Controller {
             return ['code' => 405];
         }
         $baseProp = [
-            'd:current-user-principal'    => ['current-user-principal', [['href', '/' . $_SESSION['username'] . '/principals/']]],
+            'd:current-user-principal'    => ['current-user-principal', [['href', '/' . $_SESSION['username'] . '/']]],
             'c:calendar-home-set'         => ['calendar-home-set', [['href', '/' . $_SESSION['username'] . '/calendars/']], PropNs::CAL_ID],
-            'd:displayname'               => ['displayname', basename($_REQUEST['resource'])],
             'd:resourcetype'              => ['resourcetype', '<d:collection/>'],
             'c:calendar-user-address-set' => ['calendar-user-address-set', '<d:href>mailto:' . $_SESSION['email'] . '</d:href><d:href>/' . $_SESSION['username'] . '/</d:href>'],
             'c:supported-calendar-component-set' => ['supported-calendar-component-set', '<c:comp name="VEVENT" /><c:comp name="VTODO" /><c:comp name="VJOURNAL" /><c:comp name="VFREEBUSY" />'],
             'd:current-user-privilege-set' => ['current-user-privilege-set', '<d:privilege><d:all/></d:privilege><d:privilege><c:read-free-busy/></d:privilege><d:privilege><d:read/></d:privilege><d:privilege><d:read-acl/></d:privilege><d:privilege><d:read-current-user-privilege-set/></d:privilege><d:privilege><d:write-properties/></d:privilege><d:privilege><d:write/></d:privilege><d:privilege><d:write-content/></d:privilege><d:privilege><d:unlock/></d:privilege><d:privilege><d:bind/></d:privilege><d:privilege><d:unbind/></d:privilege><d:privilege><d:write-acl/></d:privilege><d:privilege><d:share/></d:privilege>'],
-            'd:owner'                     => ['owner', [['href', '/' . $_SESSION['username'] . '/principals/']]],
+            'd:owner'                     => ['owner', [['href', '/' . $_SESSION['username'] . '/']]],
         ];
         if(!str_starts_with($this->uri, CALENDAR_ROOT) || $this->uri === CALENDAR_ROOT) {
             if ($this->type == 'propname') {
@@ -56,30 +55,7 @@ class Propfind extends Controller {
                 ]
                 ];
             }
-            if ($this->type == 'allprop') {
-                return [
-                    'code' => 207,
-                    'body' => [
-                        'multistatus',
-                        [
-                            [
-                                'response',
-                                [
-                                    ['href', $_REQUEST['resource']],
-                                    ['propstat', [
-                                        ['prop', array_values($baseProp)],
-                                        ['status', Dav_Status::$Msg[200]]
-                                    ]]
-                                ]
-                            ]
-                        ]
-                    ]
-                ];
-            }
             $response = [['href', $_REQUEST['resource']]];
-            if (substr($this->uri, -1) !== '/' && $this->uri != '/' . $_SESSION['username'] && $this->uri != '/' . $_SESSION['username'] . '/calendars') {
-                $baseProp['d:resourcetype'] = ['resourcetype'];
-            }
             if (empty($props)) {
                 $response[] = ['propstat', [['prop', array_values($baseProp)], ['status', Dav_Status::$Msg[200]]]];
             } else {
@@ -192,21 +168,25 @@ class Propfind extends Controller {
                 $allProp[$propName] = [$name, $propValue, PropNs::getNsIdByPrefix($prefix)];
             }
             if(!empty($this->prop)) {
-                $allProp = array_merge($this->prop, array_intersect_key($allProp, $this->prop));
+                $allProp = array_intersect_key($allProp, $this->prop);
             }
-            if (isset($allProp['d:current-user-privilege-set'])) {
+            if (isset($this->prop['d:current-user-privilege-set']) && empty($allProp['d:current-user-privilege-set'])) {
                 $allProp['d:current-user-privilege-set'] = ['current-user-privilege-set', '<d:privilege><d:all/></d:privilege><d:privilege><c:read-free-busy/></d:privilege><d:privilege><d:read/></d:privilege><d:privilege><d:read-acl/></d:privilege><d:privilege><d:read-current-user-privilege-set/></d:privilege><d:privilege><d:write-properties/></d:privilege><d:privilege><d:write/></d:privilege><d:privilege><d:write-content/></d:privilege><d:privilege><d:unlock/></d:privilege><d:privilege><d:bind/></d:privilege><d:privilege><d:unbind/></d:privilege><d:privilege><d:write-acl/></d:privilege><d:privilege><d:share/></d:privilege>'];
             }
             if(isset($allProp['c:calendar-timezone'])) {
-                $allProp['c:calendar-timezone'][1] = '<![CDATA[' . $allProp['c:calendar-timezone'][1] . ']]>';
+                $allProp['c:calendar-timezone'][1] = '<![CDATA[' . $allProp['c:calendar-timezone'][1] . "]]>";
             }
-            if(isset($allProp['d:owner'])) {
-                $allProp['d:owner'] = ['owner', [['href', '/' . $_SESSION['username'] . '/principals/']]];
+            if(isset($this->prop['d:owner'])) {
+                $allProp['d:owner'] = ['owner', [['href', '/' . $_SESSION['username'] . '/']]];
             }
-            if(!empty($this->prop)) {
+            $missProp = $this->prop;
+            if(!empty($this->prop) && !empty($allProp)) {
                 $missProp = array_diff_key($this->prop, $allProp);
             }
-            $response = [['href', $cal['uri']],['propstat', [['prop', array_values($allProp)], ['status', Dav_Status::$Msg[200]]]]];
+            $response = [['href', $cal['uri']]];
+            if(!empty($allProp)) {
+                $response[] = ['propstat', [['prop', array_values($allProp)], ['status', Dav_Status::$Msg[200]]]];
+            }
             if(!empty($missProp)) {
                 $response[] = ['propstat', [['prop', array_values($missProp)], ['status', Dav_Status::$Msg[404]]]];
             }
@@ -231,24 +211,33 @@ class Propfind extends Controller {
                 [$prefix, $name] = explode(':', $propName);
                 $allProp[$propName] = [$name, '', PropNs::getNsIdByPrefix($prefix)];
             }
+            $response = [['href', $comp['uri']], ['propstat', [['prop', array_values($allProp)], ['status', Dav_Status::$Msg[200]]]]];
         } else {
             foreach ($allProp as $propName => $propValue) {
                 [$prefix, $name] = explode(':', $propName);
                 $allProp[$propName] = [$name, $propValue, PropNs::getNsIdByPrefix($prefix)];
             }
             if(!empty($this->prop)) {
-                $allProp = array_merge($this->prop, array_intersect_key($allProp, $this->prop));
+                $allProp = array_intersect_key($allProp, $this->prop);
+            }
+            if(isset($allProp['c:calendar-timezone'])) {
+                $allProp['c:calendar-timezone'][1] = '<![CDATA[' . $allProp['c:calendar-timezone'][1] . ']]>';
+            }
+            if(isset($this->prop['d:owner'])) {
+                $allProp['d:owner'] = ['owner', [['href', '/' . $_SESSION['username'] . '/']]];
+            }
+            $response = [['href', $comp['uri']]];
+            $missProp = $this->prop;
+            if(!empty($allProp)) {
+                $response[] = ['propstat', [['prop', array_values($allProp)], ['status', Dav_Status::$Msg[200]]]];
+                if(!empty($this->prop)) {
+                    $missProp = array_diff_key($missProp, $allProp);
+                }
+            }
+            if(!empty($missProp)) {
+                $response[] = ['propstat', [['prop', array_values($missProp)], ['status', Dav_Status::$Msg[404]]]];
             }
         }
-        if(isset($allProp['c:calendar-timezone'])) {
-            $allProp['c:calendar-timezone'][1] = '<![CDATA[' . $allProp['c:calendar-timezone'][1] . ']]>';
-        }
-        if(isset($allProp['d:owner'])) {
-            $allProp['d:owner'] = ['owner', [['href', '/' . $_SESSION['username'] . '/principals/']]];
-        }
-        $missProp = array_diff_key($this->prop, $allProp);
-        $response = [['href', $comp['uri']], ['propstat', [['prop', array_values($allProp)], ['status', Dav_Status::$Msg[200]]]]];
-        $response[] = ['propstat', [['prop', array_values($missProp)], ['status', Dav_Status::$Msg[404]]]];
         return ['response', $response];
     }
 }
