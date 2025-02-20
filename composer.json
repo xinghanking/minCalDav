@@ -1,0 +1,22 @@
+{
+    "name": "xinghanking/caldav",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "Caldav\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "刘重量"
+        }
+    ],
+    "require": {
+        "ext-swoole": "*",
+        "ext-pdo": "*",
+        "ext-json": "*",
+        "ext-dom": "*",
+        "ext-mbstring": "*",
+        "ext-fileinfo": "*"
+    }
+}
