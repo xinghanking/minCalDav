@@ -8,8 +8,6 @@ use Caldav\Model\Db\Comp;
 use Caldav\Model\Db\PropNs;
 use Caldav\Utils\Dav_Status;
 use Exception;
-use Swoole\Http\Request;
-use Swoole\Http\Response;
 defined('BASE_URI') || define('BASE_URI', '');
 defined('DAV_URI') || define('DAV_URI', 'DAV:');
 class Propfind extends Controller {
