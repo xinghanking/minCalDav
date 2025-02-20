@@ -7,7 +7,6 @@ use Caldav\Model\Db\Calendar;
 use Caldav\Model\Db\Comp;
 use Caldav\Model\Db\PropNs;
 use Caldav\Utils\Dav_Status;
-use Caldav\Utils\CalDav;
 use Exception;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
