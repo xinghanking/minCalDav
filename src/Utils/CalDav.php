@@ -45,10 +45,10 @@ class CalDav
     public static function href_decode($href)
     {
         if (0 === strpos($href, 'http')) {
-            if (0 === strpos($href, 'http://' . $_REQUEST['HEADERS']['Host'])) {
-                $href = substr($href, strlen('http://' . $_REQUEST['HEADERS']['Host']));
-            } elseif (0 === strpos($href, 'https://' . $_REQUEST['HEADERS']['Host'])) {
-                $href = substr($href, strlen('https://' . $_REQUEST['HEADERS']['Host']));
+            if (0 === strpos($href, 'http://' . $_REQUEST['header']['Host'])) {
+                $href = substr($href, strlen('http://' . $_REQUEST['header']['Host']));
+            } elseif (0 === strpos($href, 'https://' . $_REQUEST['header']['Host'])) {
+                $href = substr($href, strlen('https://' . $_REQUEST['header']['Host']));
             } else {
                 return null;
             }

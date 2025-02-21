@@ -104,7 +104,7 @@ class Propfind extends Controller {
 
     private function getInput()
     {
-        $this->depth = $_REQUEST['HEADERS']['depth'] ?? 0;
+        $this->depth = $_REQUEST['header']['depth'] ?? 0;
         $xmlRequestBody = $this->getObjXml();
         if ($xmlRequestBody->getElementsByTagName('propname')->length > 0) {
             $this->type = 'propname';
