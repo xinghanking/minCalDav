@@ -56,7 +56,6 @@ $server->handle('/', function ($request, $response) {
         return false;
     }
     $_REQUEST['server']  = $request->server;
-    $_REQUEST['HEADERS'] = $request->header;
     $method = '\Caldav\Controller\\' . ucfirst(strtolower($method));
     $handle = new $method($request);
     $msg = $handle->handler();
