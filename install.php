@@ -9,7 +9,7 @@ if (file_exists(BASE_ROOT.'vendor/autoload.php')) {
 } else {
     require_once BASE_ROOT . 'lib' . DIRECTORY_SEPARATOR . 'autoload.php';
 }
-$configFile = BASE_ROOT . 'config' . DIRECTORY_SEPARATOR . 'calendar.php';
+$configFile = BASE_ROOT . 'config' . DIRECTORY_SEPARATOR . 'caldav.php';
 $conf = require $configFile;
 if (empty($conf['database']['host']) || empty($conf['database']['port']) || empty($conf['database']['dbname']) || empty($conf['database']['user']) || empty($conf['database']['pass'])) {
     exit('请先配置' . $configFile . '里的数据库信息');

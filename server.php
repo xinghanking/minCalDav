@@ -33,7 +33,7 @@ function start() {
         }
         unlink(PID_FILE);
     }
-    $conf = require_once BASE_ROOT.'config/calendar.php';
+    $conf = require_once BASE_ROOT.'config/caldav.php';
     define('BASE_URI', $conf['server']['baseurl']);
     $server = new Server($conf['server']['host'], $conf['server']['port']);
     $server->set([

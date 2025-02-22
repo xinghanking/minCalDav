@@ -30,7 +30,7 @@ class Db
     {
         try {
             if (empty(self::$pdo)) {
-                $config = require __DIR__."/../../../config/calendar.php";
+                $config = require __DIR__."/../../../config/caldav.php";
                 $dsn    = sprintf('%s:host=%s;port=%d;dbname=%s;charset=%s',
                     $config['database']['driver'], $config['database']['host'],
                     $config['database']['port'], $config['database']['dbname'],
