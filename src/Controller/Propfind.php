@@ -22,12 +22,13 @@ class Propfind extends Controller {
             return ['code' => 405];
         }
         $baseProp = [
-            'd:current-user-principal'    => ['current-user-principal', [['href', '/' . $_SESSION['username'] . '/']]],
+            'd:current-user-principal'    => ['current-user-principal', [['href', '/' . $_SESSION['username'] . '/principals/']]],
             'd:displayname'               => ['displayname', basename($this->uri)],
             'c:calendar-home-set'         => ['calendar-home-set', [['href', '/' . $_SESSION['username'] . '/calendars/']], PropNs::CAL_ID],
             'd:resourcetype'              => ['resourcetype', '<d:collection/>'],
             'c:calendar-user-address-set' => ['calendar-user-address-set', '<d:href>mailto:' . $_SESSION['email'] . '</d:href><d:href>/' . $_SESSION['username'] . '/</d:href>'],
             'c:supported-calendar-component-set' => ['supported-calendar-component-set', '<c:comp name="VEVENT" /><c:comp name="VTODO" /><c:comp name="VJOURNAL" /><c:comp name="VFREEBUSY" />'],
+            'c:calendar-timezone'          => ['calendar-timezone', 'Asia/Shanghai'],
             'd:current-user-privilege-set' => ['current-user-privilege-set', '<d:privilege><d:all/></d:privilege><d:privilege><c:read-free-busy/></d:privilege><d:privilege><d:read/></d:privilege><d:privilege><d:read-acl/></d:privilege><d:privilege><d:read-current-user-privilege-set/></d:privilege><d:privilege><d:write-properties/></d:privilege><d:privilege><d:write/></d:privilege><d:privilege><d:write-content/></d:privilege><d:privilege><d:unlock/></d:privilege><d:privilege><d:bind/></d:privilege><d:privilege><d:unbind/></d:privilege><d:privilege><d:write-acl/></d:privilege><d:privilege><d:share/></d:privilege>'],
             'd:owner'                     => ['owner', [['href', '/' . $_SESSION['username'] . '/']]],
             'd:group-membership'          => ['group-membership'],

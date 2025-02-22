@@ -17,7 +17,7 @@ class Calendar extends Db
         'sync_token',
         'component_set',
         'prop',
-        'ics_prop',
+        'comp_prop',
         'ics_data',
         'last_modified',
         'etag'
@@ -31,6 +31,31 @@ class Calendar extends Db
     const PRODID = '-//Han Dress//CalDav//ZH_CN';
     const VERSION = '2.0';
     const CALSCALE = 'GREGORIAN';
+    const BASE_PROP = [
+        'd:resourcetype'         => [['collection'],['calendar', '', PropNs::CAL_ID]],
+        'c:supported-calendar-component-set' => '<c:comp name="VEVENT" /><c:comp name="VTODO" /><c:comp name="VJOURNAL" /><c:comp name="VFREEBUSY" />',
+        'd:supported-report-set' => '<d:report><d:sync-collection /></d:report><d:report><c:calendar-multiget /></d:report><d:report><c:calendar-query /></d:report><d:report><c:free-busy-query /></d:report>',
+        'd:displayname'          => '',
+        'd:supported-privilege-set' => [
+            ['privilege>', '<c:read-free-busy />'],
+            ['privilege>', '<d:read />'],
+            ['privilege>', '<d:read-acl />'],
+            ['privilege>', '<d:read-current-user-privilege-set />'],
+            ['privilege>', '<d:write-properties />'],
+            ['privilege>', '<d:write />'],
+            ['privilege>', '<d:write-content />'],
+            ['privilege>', '<d:unlock />'],
+            ['privilege>', '<d:bind />'],
+            ['privilege>', '<d:unbind />'],
+            ['privilege>', '<d:write-acl />'],
+            ['privilege>', '<d:share />']
+        ],
+        'c:calendar-timezone' => 'Asia/Shanghai',
+        'd:creationdate'         => '',
+        'd:getlastmodified'      => '',
+        'd:getetag'              => '',
+        'd:sync-token'           => '',
+    ];
     protected array $iscExplodeProp = ['PRODID', 'SOURCE', 'METHOD'];
 
     private $fieldMap = [
@@ -59,16 +84,16 @@ class Calendar extends Db
     public function getIcsBasePropById($id)
     {
         $info = $this->getRow($this->_fields, ['`id`=' => $id]);
-        if(empty($info['ics_prop'])){
+        if(empty($info['comp_prop'])){
             $baseProps = [
                 'PRODID'  => self::PRODID,
                 'VERSION' => self::VERSION,
                 'CALSCALE' => self::CALSCALE
             ];
             $icsProps = json_encode($baseProps , JSON_UNESCAPED_SLASHES);
-            $this->update(['ics_prop' => $icsProps], ['`id`=' => $id]);
+            $this->update(['comp_prop' => $icsProps], ['`id`=' => $id]);
         } else {
-            $baseProps = json_decode($info['ics_prop'], true);
+            $baseProps = json_decode($info['comp_prop'], true);
         }
         return \Caldav\Utils\Calendar::arrToIscText($baseProps);
     }
@@ -76,20 +101,20 @@ class Calendar extends Db
         $ics        = "BEGIN:VCALENDAR\n";
         $currentVer = [];
         $dbCalObjs  = Comp::getInstance();
-        if(!empty($info['ics_prop'])) {
-            $info['ics_prop'] = json_decode($info['ics_prop'], true);
+        if(!empty($info['comp_prop'])) {
+            $info['comp_prop'] = json_decode($info['comp_prop'], true);
         }
-        if (empty($info['ics_prop'])) {
+        if (empty($info['comp_prop'])) {
             $currentVer['prop'] = [
                 'PRODID'  => self::PRODID,
                 'VERSION' => self::VERSION,
                 'CALSCALE' => self::CALSCALE
             ];
         } else {
-            $currentVer['prop'] = $info['ics_prop'];
+            $currentVer['prop'] = $info['comp_prop'];
         }
         $ics .= \Caldav\Utils\Calendar::arrToIscText($currentVer['prop']) . "\n";
-        $data = $dbCalObjs->getData(['uri', 'comp_type', 'ics_data', 'sequence'], ['`calendar_id`=' => $info['id'], '`deleted`=' => self::DELETED_NO]);
+        $data = $dbCalObjs->getData(['uri', 'comp_type', 'ics_data', 'sequence'], ['`calendar_id`=' => $info['id']]);
         $compMap = array_flip(Comp::TYPE_MAP);
         if (!empty($data)) {
             foreach ($data as $row) {
@@ -108,7 +133,7 @@ class Calendar extends Db
             }
         }
         $ics .= 'END:VCALENDAR';
-        $this->update(['ics_prop' => json_encode($currentVer['prop'], JSON_UNESCAPED_SLASHES), 'ics_data' => $ics], ['`id`=' => $info['id']]);
+        $this->update(['comp_prop' => json_encode($currentVer['prop'], JSON_UNESCAPED_SLASHES), 'ics_data' => $ics], ['`id`=' => $info['id']]);
         $dbChange = CalendarChange::getInstance();
         unset($currentVer['prop']['PRODID']);
         $currentVer = json_encode($currentVer, JSON_UNESCAPED_SLASHES);
@@ -121,6 +146,9 @@ class Calendar extends Db
         return $ics;
     }
     public function create(&$info, $props = []){
+        $props['d:creationdate'] = gmdate('Y-m-d\TH:i:s\Z', time());
+        $props['d:getlastmodified'] = gmdate('D, d M Y H:i:s', time()) . ' GMT';
+        $props = array_merge(self::BASE_PROP, $props);
         if(!empty($props['c:supported-calendar-component-set'])) {
             if(is_array($props['c:supported-calendar-component-set'])) {
                 $components = [];
@@ -148,12 +176,12 @@ class Calendar extends Db
                 $info[$this->fieldMap[$name]] = $value[1];
             }
         }
-        $info['owner_id'] = $_SESSION['uid'];
-        $props['d:getetag'] = $this->createEtag();
-        $props['cs:getctag'] = $props['d:getetag'];
-        $props['d:sync-token'] = $this->createSyncToken();
+        $info['owner_id'] = $info['owner_id'] ?? $_SESSION['uid'];
+        $props['d:getetag'] = '';
+        $props['cs:getctag'] = '';
+        $props['d:sync-token'] = 1;
         $info['prop']=json_encode($props, JSON_UNESCAPED_SLASHES);
-        $info['ics_prop'] = json_encode([], JSON_UNESCAPED_SLASHES);
+        $info['comp_prop'] = json_encode([], JSON_UNESCAPED_SLASHES);
 
         $id = $this->insert($info);
         if(!empty($comp['timezone'])){
@@ -164,7 +192,7 @@ class Calendar extends Db
     }
 
     public function getCalendarByOwnerId($uid){
-        return $this->getData(['id', 'uri', 'prop', 'ics_prop'], ['`owner_id`=' => $uid]);
+        return $this->getData(['id', 'uri', 'prop', 'comp_prop'], ['`owner_id`=' => $uid]);
     }
     public function updateByIsc($uri, $ics){
 

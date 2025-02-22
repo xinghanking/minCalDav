@@ -22,7 +22,7 @@ class Comp extends Db
         'dtstart',
         'dtend',
         'prop',
-        'ics_prop',
+        'comp_prop',
         'ics_data',
         'last_modified',
         'etag',
@@ -65,7 +65,7 @@ class Comp extends Db
                 'dtstart'       => $dtTime['dtstart'],
                 'dtend'         => $dtTime['dtend'],
                 'prop'          => json_encode(['d:getlastmodified' => '', 'd:getetag' => ''], JSON_UNESCAPED_SLASHES),
-                'ics_prop'      => json_encode($ics, JSON_UNESCAPED_SLASHES),
+                'comp_prop'      => json_encode($ics, JSON_UNESCAPED_SLASHES),
                 'ics_data'      => \Caldav\Utils\Calendar::arrToIscText($ics)
             ];
             return $this->insert($info);
@@ -82,7 +82,7 @@ class Comp extends Db
                 'dtstart'       => $dtTime['dtstart'],
                 'dtend'         => $dtTime['dtend'],
                 'prop'          => json_encode(['d:getlastmodified' => '', 'd:getetag' => ''], JSON_UNESCAPED_SLASHES),
-                'ics_prop'      => json_encode($item, JSON_UNESCAPED_SLASHES),
+                'comp_prop'      => json_encode($item, JSON_UNESCAPED_SLASHES),
                 'ics_data'      => \Caldav\Utils\Calendar::arrToIscText($item)
             ];
         }
@@ -92,7 +92,7 @@ class Comp extends Db
     public function updateInstance($id, $ics)
     {
         $info = $this->getDtTime($ics);
-        $info['ics_prop'] = json_encode($ics, JSON_UNESCAPED_SLASHES);
+        $info['comp_prop'] = json_encode($ics, JSON_UNESCAPED_SLASHES);
         $info['ics_data'] = \Caldav\Utils\Calendar::arrToIscText($ics);
         return $this->update($info , ['`id`=' => $id]);
     }

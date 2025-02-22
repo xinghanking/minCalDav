@@ -47,9 +47,12 @@ class Db
         $this->init();
     }
 
-    public static function getInstance()
+    /**
+     * @return object|null
+     */
+    public static function getInstance(): ?object
     {
-        if (!static::$instance || !(static::$instance instanceof static)) {
+        if (!(static::$instance instanceof static)) {
             static::$instance = new static();
         }
         return static::$instance;
@@ -241,6 +244,9 @@ class Db
 
     public static function beginTransaction()
     {
+        if(!(self::$pdo instanceof PDO)){
+            self::getInstance();
+        }
         return self::$pdo->beginTransaction();
     }
 

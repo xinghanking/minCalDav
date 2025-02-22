@@ -17,6 +17,7 @@
         "ext-json": "*",
         "ext-dom": "*",
         "ext-mbstring": "*",
-        "ext-fileinfo": "*"
+        "ext-fileinfo": "*",
+      "ext-posix": "*"
     }
 }

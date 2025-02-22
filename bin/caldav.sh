@@ -26,7 +26,7 @@ function start() {
         fi
     fi
 
-    nohup php $APP_SCRIPT > $APP_LOG_FILE 2>&1 &
+    nohup php $APP_SCRIPT start > $APP_LOG_FILE 2>&1 &
     echo $! > $APP_PID_FILE
     echo "$APP_NAME start success."
 }
@@ -34,11 +34,11 @@ function start() {
 # 重载 Swoole 服务
 function reload() {
     if [ ! -f $APP_PID_FILE ]; then
-        echo "$APP_NAME is not running."
+        echo "$APP_NAME is not run."
         exit 1
     fi
     if ! kill -0 $(cat $APP_PID_FILE) > /dev/null 2>&1; then
-        echo "$APP_NAME is not running."
+        echo "$APP_NAME is not run."
         rm -fr $APP_PID_FILE
         exit
     fi
@@ -55,8 +55,11 @@ function stop() {
     fi
 
     kill $(cat $APP_PID_FILE)
-    rm -f $APP_PID_FILE
+    while ps -p $(cat $APP_PID_FILE) > /dev/null 2>&1; do
+        sleep 1
+    done
     echo "$APP_NAME is stop."
+    rm -f $APP_PID_FILE
 }
 
 # 查看 Swoole 服务状态
@@ -90,8 +93,17 @@ case "$1" in
         stop
         start
         ;;
+    useradd)
+        php $APP_SCRIPT useradd
+        ;;
+    userdel)
+        php $APP_SCRIPT userdel
+        ;;
+    passwd)
+        php $APP_SCRIPT passwd
+        ;;
     *)
-        echo "使用方法: $0 {start|reload|stop|status|restart}"
+        echo "使用方法: $0 { start | reload | stop | status | restart | useradd | userdel | passwd }"
         exit 1
         ;;
 esac

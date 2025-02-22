@@ -9,8 +9,8 @@ class PropNs extends Db
 {
     const TABLE = 'prop_ns';
     const LIMIT = 256;
-    const CAL_ID = 1;
-    const CS_ID  = 2;
+    const CAL_ID = 2;
+    const CS_ID  = 3;
     public static array $uriMap = [];
     public static array $nsList = [];
     private array $prefixDict = [

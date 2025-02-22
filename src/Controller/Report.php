@@ -100,7 +100,7 @@ class Report extends Controller
             if (!empty($changes['comp'])) {
                 $compUris = array_keys($changes['comp']);
                 $comps = $dbCalComp->getData(['prop', 'comp_type', 'uri', 'ics_data'], ['`uri` IN ' => $compUris]);
-                $calProps = json_decode($calInfo['ics_prop'], true);
+                $calProps = json_decode($calInfo['comp_prop'], true);
                 $calProps = \Caldav\Utils\Calendar::arrToIscText($calProps);
                 $ics = "<![CDATA[BEGIN:VCALENDAR\n" . $calProps . "\n";
                 $typeMap = array_flip(Comp::TYPE_MAP);
@@ -135,8 +135,8 @@ class Report extends Controller
             return ['code' => 207, 'body' => ['multistatus',  $propStat]];
         }
         if ($requireType == 'calendar-query') {
-            $comps = $dbCalComp->getData(['prop', 'comp_type', 'ics_prop', 'uri', 'ics_data'], ['`calendar_id`=' => $calInfo['id']]);
-            $calProps = empty($calInfo['ics_prop']) ? [] : \Caldav\Utils\Calendar::arrToIscText(json_decode($calInfo['ics_prop'],true));
+            $comps = $dbCalComp->getData(['prop', 'comp_type', 'comp_prop', 'uri', 'ics_data'], ['`calendar_id`=' => $calInfo['id']]);
+            $calProps = empty($calInfo['comp_prop']) ? [] : \Caldav\Utils\Calendar::arrToIscText(json_decode($calInfo['comp_prop'],true));
             $ics = "<![CDATA[BEGIN:VCALENDAR\n".$calProps."\n";
             $propStat = [];
             foreach ($comps as $obj) {
@@ -175,10 +175,10 @@ class Report extends Controller
             }
             $fields = ['prop'];
             if (isset($props['c:calendar-data'])) {
-                $fields = ['prop', 'comp_type', 'ics_prop', 'uri', 'ics_data'];
+                $fields = ['prop', 'comp_type', 'comp_prop', 'uri', 'ics_data'];
             }
             $comps = $dbCalComp->getData($fields, ['`uri` IN ' => $hrefs]);
-            $calProps = \Caldav\Utils\Calendar::arrToIscText(json_decode($calInfo['ics_prop'], true));
+            $calProps = \Caldav\Utils\Calendar::arrToIscText(json_decode($calInfo['comp_prop'], true));
             $ics = "<![CDATA[BEGIN:VCALENDAR\n" . $calProps . "\n";
             $propStat = [];
             foreach ($comps as $obj) {
@@ -218,7 +218,7 @@ class Report extends Controller
            if (empty($comps)) {
                return ['code' => 404];
            }
-           $calProps = \Caldav\Utils\Calendar::arrToIscText(json_decode($calInfo['ics_prop'], true));
+           $calProps = \Caldav\Utils\Calendar::arrToIscText(json_decode($calInfo['comp_prop'], true));
            $ics = "<![CDATA[BEGIN:VCALENDAR\n" . $calProps . "\n";
            foreach ($comps as $obj) {
                $ics .= "BEGIN:VFREEBUSY\n" . $obj['ics_data'] . "\nEND:VFREEBUSY\n";
