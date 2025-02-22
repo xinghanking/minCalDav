@@ -4,6 +4,7 @@ namespace Caldav\Utils;
 
 use Caldav\Model\Db\PropNs;
 use DOMDocument;
+use DOMElement;
 
 class CalDav
 {

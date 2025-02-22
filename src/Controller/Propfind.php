@@ -2,7 +2,6 @@
 namespace Caldav\Controller;
 
 use Caldav\Model\Base\Controller;
-use Caldav\Model\Dav\Resource;
 use Caldav\Model\Db\Calendar;
 use Caldav\Model\Db\Comp;
 use Caldav\Model\Db\PropNs;
@@ -139,7 +138,6 @@ class Propfind extends Controller {
     /**
      * 获取对指定处理资源的执行按照请求的查询条件检索指定范围的属性值集合结果
      *
-     * @param  Resource|null  $objResource
      * @param  int  $depth
      *
      * @return array

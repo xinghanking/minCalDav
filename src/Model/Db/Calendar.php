@@ -202,7 +202,7 @@ class Calendar extends Db
         unset($ics['VCALENDAR']['METHOD']);
         unset($ics['VCALENDAR']['SOURCE']);
         unset($ics['VCALENDAR']['PRODID']);
-        $info['isc_prop'] = json_encode($ics['VCALENDAR'], JSON_UNESCAPED_UNICODE);
+        $info['comp_prop'] = json_encode($ics['VCALENDAR'], JSON_UNESCAPED_UNICODE);
         $info['ics_data'] = \Caldav\Utils\Calendar::arrToIscText($ics['VCALENDAR']);
         $id = $this->create($info);
         $ics = array_intersect_key($ics, Comp::TYPE_MAP);
@@ -213,15 +213,9 @@ class Calendar extends Db
         unset($ics['VCALENDAR']['METHOD']);
         unset($ics['VCALENDAR']['SOURCE']);
         unset($ics['VCALENDAR']['PRODID']);
-        $etag = \Caldav\Model\Dav\Resource::createEtag();
-        $syncToken = $this->createSyncToken();
-        $info['isc_prop'] = json_encode($ics['VCALENDAR'], JSON_UNESCAPED_UNICODE);
+        $info['comp_prop'] = json_encode($ics['VCALENDAR'], JSON_UNESCAPED_UNICODE);
         $info['ics_data'] = \Caldav\Utils\Calendar::arrToIscText($ics['VCALENDAR']);
         $this->update($info, ['`id`=' => $id]);
-        $sql = 'UPDATE ' . $this->_tbl . ' AS `a`, ' . Resource::TABLE . ' AS b 
-        SET `b`.`getetag`=:etag
-        WHERE `a .`resource_id`=`b`.`id` AND `a`.`id`=' . $id;
-        $this->execute($sql, [':etag' => $etag]);
         $dbCalObjs = Comp::getInstance();
         $dbCalObjs->delete(['`calendar_id`=' => $id]);
         return $this->addObjs($uri, $id, $ics);

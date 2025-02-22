@@ -1,5 +1,5 @@
 <?php
-defined('NS_DAV_ID') || define('NS_DAV_ID', 0);
+
 function myAutoloader($class)
 {
     if (str_starts_with($class, 'Caldav\\')) {
