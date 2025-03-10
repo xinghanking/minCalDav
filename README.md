@@ -14,4 +14,4 @@
 4. 执行php install.php 导入数据库和初始化.
 5. 执行 /bin/caldav.sh useradd 添加运行用户，如：xinghan;
 6. 执行 /bin/caldav.sh start 可打开程序运行.
-7. 程序运行成功开启后， caldav客户端（如手机日历类app）可通过 url: （http://IP:端口/），用户名和密码，连接操作。
+7. 程序运行成功开启后， caldav客户端（如手机日历类app）可通过 url: （http://IP:端口/） ，用户名和密码，连接操作。
